@@ -23,7 +23,7 @@ ALWAYS_INSTALLED_APPS = (
     'django.contrib.staticfiles',
 )
 
-ALWAYS_MIDDLEWARE_CLASSES = (
+ALWAYS_MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -39,7 +39,7 @@ settings.configure(
     TEMPLATE_DEBUG=True,
     ALLOWED_HOSTS=[],
     INSTALLED_APPS=ALWAYS_INSTALLED_APPS + CUSTOM_INSTALLED_APPS,
-    MIDDLEWARE_CLASSES=ALWAYS_MIDDLEWARE_CLASSES,
+    MIDDLEWARE=ALWAYS_MIDDLEWARE,
     ROOT_URLCONF='tests.urls',
     DATABASES={
         'default': {
@@ -57,9 +57,11 @@ settings.configure(
         'django.contrib.auth.hashers.MD5PasswordHasher',
     ),
     FIXTURE_DIRS=glob.glob(BASE_DIR + '/' + '*/fixtures/'),
-    TEMPLATE_DIRS=(
-        os.path.abspath(os.path.join(BASE_DIR, 'templates')),
-    ),
+    TEMPLATES=[{
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.abspath(os.path.join(BASE_DIR, 'templates'))],
+    }],
+    AUDIT_LOG_API_AUTH_USER_MODEL="audit_log.EmployeeProfile",
 )
 
 django.setup()

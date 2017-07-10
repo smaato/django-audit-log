@@ -19,7 +19,7 @@ class LastUserField(models.ForeignKey):
 
 
 class UserProfileField(models.ForeignKey):
-    def __init__(self, to=getattr(settings, 'AUDIT_LOG_API_AUTH_USER_MODEL', 'auth.User'), null=True,
+    def __init__(self, to=getattr(settings, 'AUDIT_LOG_API_AUTH_USER_MODEL'), null=True,
                  editable=False, **kwargs):
         super(UserProfileField, self).__init__(to=to, null=null, editable=editable, **kwargs)
 

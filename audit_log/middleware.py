@@ -41,7 +41,10 @@ def _register_pre_save_field(field_cls, sender, instance, obj):
 
 
 class UserLoggingMiddleware(object):
-    def process_request(self, request):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         if settings.DISABLE_AUDIT_LOG:
             return
         if not request.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
@@ -56,7 +59,8 @@ class UserLoggingMiddleware(object):
             signals.pre_save.connect(update_pre_save_info, dispatch_uid=(self.__class__, request,), weak=False)
             signals.post_save.connect(update_post_save_info, dispatch_uid=(self.__class__, request,), weak=False)
 
-    def process_response(self, request, response):
+        response = self.get_response(request)
+
         if settings.DISABLE_AUDIT_LOG:
             return
         signals.pre_save.disconnect(dispatch_uid=(self.__class__, request,))
@@ -91,6 +95,8 @@ class APIAuthMiddleware(object):
     """
     Middleware to lazy load APIAuth object in case if one is different from default django object.
     """
+    def __init__(self, get_response):
+        self.get_response = get_response
 
     @cached_property
     def auth_class(self):
@@ -111,7 +117,7 @@ class APIAuthMiddleware(object):
             pass
         return None
 
-    def process_request(self, request):
+    def __call__(self, request):
         from django.utils.functional import SimpleLazyObject
         from django.contrib.auth.middleware import get_user
 
@@ -121,3 +127,5 @@ class APIAuthMiddleware(object):
             request.userprofile = SimpleLazyObject(lambda: self.get_user(request))
         else:
             request.userprofile = None
+
+        return self.get_response(request)

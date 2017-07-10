@@ -1,7 +1,7 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.contrib import admin
 from django.db import models
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.test.client import Client
 
 from .models import (Product, WarehouseEntry, ProductCategory, ExtremeWidget,
@@ -13,20 +13,20 @@ from .views import (index, rate_product, CategoryCreateView, ProductCreateView,
 
 admin.autodiscover()
 
-urlpatterns = patterns('',
-                       url(r'^/$', index),
-                       url(r'^rate/(\d)/$', rate_product),
-                       url(r'^category/create/$', CategoryCreateView.as_view()),
-                       url(r'^product/create/$', ProductCreateView.as_view()),
-                       url(r'^product/update/(?P<pk>\d+)/$', ProductUpdateView.as_view()),
-                       url(r'^product/delete/(?P<pk>\d+)/$', ProductDeleteView.as_view()),
-                       url(r'^extremewidget/create/$', ExtremeWidgetCreateView.as_view()),
-                       url(r'^propertyowner/create/$', PropertyOwnerCreateView.as_view()),
-                       url(r'^property/create/$', PropertyCreateView.as_view()),
-                       url(r'^property/update/(?P<pk>\d+)/$', PropertyUpdateView.as_view()),
-                       url(r'^employee/create/$', EmployeeCreateView.as_view()),
-                       url(r'^employee/update/(?P<pk>\d+)/$', EmployeeUpdateView.as_view()),
-                       )
+urlpatterns = (
+    url(r'^/$', index),
+    url(r'^rate/(\d)/$', rate_product),
+    url(r'^category/create/$', CategoryCreateView.as_view()),
+    url(r'^product/create/$', ProductCreateView.as_view()),
+    url(r'^product/update/(?P<pk>\d+)/$', ProductUpdateView.as_view()),
+    url(r'^product/delete/(?P<pk>\d+)/$', ProductDeleteView.as_view()),
+    url(r'^extremewidget/create/$', ExtremeWidgetCreateView.as_view()),
+    url(r'^propertyowner/create/$', PropertyOwnerCreateView.as_view()),
+    url(r'^property/create/$', PropertyCreateView.as_view()),
+    url(r'^property/update/(?P<pk>\d+)/$', PropertyUpdateView.as_view()),
+    url(r'^employee/create/$', EmployeeCreateView.as_view()),
+    url(r'^employee/update/(?P<pk>\d+)/$', EmployeeUpdateView.as_view()),
+)
 
 
 def __setup_admins():
@@ -70,9 +70,8 @@ class LogEntryMetaOptionsTest(TestCase):
                              "%sauditlogentry" % WarehouseEntry._meta.db_table)
 
 
+@override_settings(ROOT_URLCONF=urlpatterns)
 class TrackingAuthFieldsTest(TestCase):
-    urls = __name__
-
     def setUp(self):
         category = ProductCategory.objects.create(name="gadgets", description="gadgetry")
         category.product_set.create(name="new gadget", description="best gadget eva", price=100)
@@ -93,7 +92,7 @@ class TrackingAuthFieldsTest(TestCase):
         self.assertEqual(product.productrating_set.all().count(), 0)
         c = Client()
         c.login(username="admin@example.com", password="admin")
-        c.get('/rate/1/', )
+        c.get('/rate/1/')
         key = c.session.session_key
         resp = c.post('/rate/1/', {'rating': 4})
         self.assertEqual(resp.status_code, 200)
@@ -114,9 +113,8 @@ class TrackingAuthFieldsTest(TestCase):
         self.assertEqual(product.productrating_set.all()[0].user, None)
 
 
+@override_settings(ROOT_URLCONF=urlpatterns)
 class TrackingChangesTest(TestCase):
-    urls = __name__
-
     def run_client(self, client):
         client.post('/category/create/', {'name': 'Test Category', 'description': 'Test description'})
         client.post('/category/create/', {'name': 'Test Category 2', 'description': 'Test description 2'})
@@ -206,9 +204,8 @@ class TrackingChangesTest(TestCase):
         c.post('/employee/create/', {'email': 'vvangelovski@gmail.com', 'password': 'testpass'})
 
 
+@override_settings(ROOT_URLCONF=urlpatterns)
 class TestOneToOne(TestCase):
-    urls = __name__
-
     def run_client(self, client):
         client.post('/propertyowner/create/', {'name': 'John Dory'})
         client.post('/propertyowner/create/', {'name': 'Jane Doe'})
