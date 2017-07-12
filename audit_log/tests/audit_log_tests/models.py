@@ -38,7 +38,6 @@ class Employee(AbstractBaseUser):
     USERNAME_FIELD = 'email'
 
     objects = EmployeeManager()
-    audit_log = AuditLog()
 
     @property
     def is_active(self):
@@ -70,6 +69,10 @@ class Employee(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
+
+
+class EmployeeProfile(models.Model):
+    pass
 
 
 class ProductCategory(models.Model):
