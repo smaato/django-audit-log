@@ -110,8 +110,9 @@ class APIAuthMiddleware(object):
         from rest_framework.exceptions import AuthenticationFailed
 
         try:
-            user, _ = self.auth_class().authenticate(Request(request))
-            if user is not None:
+            user_and_token = self.auth_class().authenticate(Request(request))
+            if user_and_token is not None:
+                user, _ = user_and_token
                 return user
         except AuthenticationFailed:
             pass

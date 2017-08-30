@@ -9,3 +9,5 @@
 dist/*
 build/*
 docs/_build/*
+/audit_log/.project
+audit_log/.project
