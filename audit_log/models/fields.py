@@ -9,10 +9,10 @@ class LastUserField(models.ForeignKey):
     of a model. None will be the value for AnonymousUser.
     """
 
-    def __init__(self, to=getattr(settings, 'AUTH_USER_MODEL', 'auth.User'), null=True, editable=False, **kwargs):
-        super(LastUserField, self).__init__(to=to, null=null, editable=editable, **kwargs)
+    def __init__(self, to=getattr(settings, 'AUTH_USER_MODEL', 'auth.User'), on_delete=models.SET_NULL, null=True, editable=False, **kwargs):
+        super(LastUserField, self).__init__(to=to, on_delete=on_delete, null=null, editable=editable, **kwargs)
 
-    def contribute_to_class(self, cls, name, **kwargs):
+    def contribute_to_class(self, cls, name):
         super(LastUserField, self).contribute_to_class(cls, name)
         registry = registration.FieldRegistry(self.__class__)
         registry.add_field(cls, self)
@@ -20,8 +20,8 @@ class LastUserField(models.ForeignKey):
 
 class UserProfileField(models.ForeignKey):
     def __init__(self, to=getattr(settings, 'AUDIT_LOG_API_AUTH_USER_MODEL'), null=True,
-                 editable=False, **kwargs):
-        super(UserProfileField, self).__init__(to=to, null=null, editable=editable, **kwargs)
+                 editable=False, on_delete=models.SET_NULL, **kwargs):
+        super(UserProfileField, self).__init__(to=to, null=null, editable=editable, on_delete=on_delete, **kwargs)
 
     def contribute_to_class(self, cls, name, **kwargs):
         super(UserProfileField, self).contribute_to_class(cls, name)
@@ -37,7 +37,7 @@ class LastSessionKeyField(models.CharField):
     def __init__(self, max_length=40, null=True, editable=False, **kwargs):
         super(LastSessionKeyField, self).__init__(max_length=max_length, null=null, editable=editable, **kwargs)
 
-    def contribute_to_class(self, cls, name, **kwargs):
+    def contribute_to_class(self, cls, name):
         super(LastSessionKeyField, self).contribute_to_class(cls, name)
         registry = registration.FieldRegistry(self.__class__)
         registry.add_field(cls, self)

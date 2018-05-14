@@ -156,13 +156,19 @@ class AuditLog(object):
                     field._unique = False
                     field.db_index = True
 
-                if field.rel and field.rel.related_name:
-                    field.rel.related_name = '_auditlog_%s' % field.rel.related_name
-                elif field.rel:
+                if field.remote_field and field.remote_field.related_name:
+                    field.remote_field.related_name = '_auditlog_{}_{}'.format(
+                        model._meta.model_name,
+                        field.remote_field.related_name
+                    )
+                elif field.remote_field:
                     try:
-                        if field.rel.get_accessor_name():
-                            field.rel.related_name = '_auditlog_%s' % field.rel.get_accessor_name()
-                    except:
+                        if field.remote_field.get_accessor_name():
+                            field.remote_field.related_name = '_auditlog_{}_{}'.format(
+                                model._meta.model_name,
+                                field.remote_field.get_accessor_name()
+                            )
+                    except e:
                         pass
 
                 fields[field.name] = field
@@ -193,7 +199,6 @@ class AuditLog(object):
             return result
 
         action_user_field = LastUserField(related_name=rel_name, editable=False)
-        action_userprofile_field = UserProfileField(related_name=rel_name, editable=False)
 
         # check if the manager has been attached to auth user model
         if [model._meta.app_label, model.__name__] == getattr(settings, 'AUTH_USER_MODEL', 'auth.User').split("."):
@@ -203,7 +208,6 @@ class AuditLog(object):
             'action_id': models.AutoField(primary_key=True),
             'action_date': models.DateTimeField(default=datetime_now, editable=False, blank=False),
             'action_user': action_user_field,
-            'action_userprofile': action_userprofile_field,
             'action_type': models.CharField(max_length=1, editable=False, choices=(
                 ('I', _('Created')),
                 ('U', _('Changed')),
