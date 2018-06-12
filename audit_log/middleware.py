@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AnonymousUser
 from django.db.models import signals
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.functional import curry
@@ -111,6 +112,7 @@ class APIAuthMiddleware(object):
         return getattr(module, clazz)
 
     def get_user(self, request):
+        from django.contrib.auth.middleware import get_user
         from rest_framework.request import Request
         from rest_framework.exceptions import AuthenticationFailed
 
@@ -136,8 +138,8 @@ class APIAuthMiddleware(object):
         user = get_user(request)
 
         if not user.is_authenticated:
-            request.userprofile = SimpleLazyObject(lambda: self.get_user(request))
+            request.user = SimpleLazyObject(lambda: self.get_user(request))
         else:
-            request.userprofile = None
+            request.user = AnonymousUser()
 
         return self.get_response(request)
