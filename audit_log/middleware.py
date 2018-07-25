@@ -1,3 +1,8 @@
+from django.contrib.auth.models import AnonymousUser
+from django.db.models import signals
+from django.utils.deprecation import MiddlewareMixin
+from django.utils.functional import curry
+
 from audit_log import registration, settings
 from audit_log.models import fields
 from audit_log.models.managers import AuditLogManager
@@ -47,10 +52,11 @@ class UserLoggingMiddleware(object):
     def __call__(self, request):
         if settings.DISABLE_AUDIT_LOG:
             return
+
         if not request.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
             props = {
-                'user': request.user if hasattr(request, 'user') and request.user.is_authenticated() else None,
-                'userprofile': request.userprofile if hasattr(request, 'userprofile') else None,
+                'user': request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                'userprofile': getattr(request, 'userprofile', None),
                 'session': request.session.session_key,
             }
 
@@ -106,9 +112,13 @@ class APIAuthMiddleware(object):
         return getattr(module, clazz)
 
     def get_user(self, request):
+        from django.contrib.auth.middleware import get_user
         from rest_framework.request import Request
         from rest_framework.exceptions import AuthenticationFailed
 
+        user = get_user(request)
+        if user.is_authenticated:
+            return user
         try:
             user_and_token = self.auth_class().authenticate(Request(request))
             if user_and_token is not None:
@@ -122,11 +132,15 @@ class APIAuthMiddleware(object):
         from django.utils.functional import SimpleLazyObject
         from django.contrib.auth.middleware import get_user
 
+        assert hasattr(request, 'session'),\
+        """The Django authentication middleware requires session middleware to be installed.
+         Edit your MIDDLEWARE setting to insert 'django.contrib.sessions.middleware.SessionMiddleware'."""
+
         user = get_user(request)
 
-        if not user.is_authenticated():
-            request.userprofile = SimpleLazyObject(lambda: self.get_user(request))
+        if not user.is_authenticated:
+            request.user = SimpleLazyObject(lambda: self.get_user(request))
         else:
-            request.userprofile = None
+            request.user = AnonymousUser()
 
         return self.get_response(request)
