@@ -55,7 +55,7 @@ class UserLoggingMiddleware(object):
 
         if not request.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
             props = {
-                'user': request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
+                'user': request.user if getattr(request, 'user') and request.user.is_authenticated else None,
                 'userprofile': getattr(request, 'userprofile', None),
                 'session': request.session.session_key,
             }
