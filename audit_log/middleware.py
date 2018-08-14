@@ -126,7 +126,7 @@ class APIAuthMiddleware(object):
                 return user
         except AuthenticationFailed:
             pass
-        return None
+        return AnonymousUser()
 
     def __call__(self, request):
         from django.utils.functional import SimpleLazyObject
