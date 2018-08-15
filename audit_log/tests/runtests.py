@@ -16,6 +16,7 @@ CUSTOM_INSTALLED_APPS = (
 )
 
 ALWAYS_INSTALLED_APPS = (
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -60,6 +61,14 @@ settings.configure(
     TEMPLATES=[{
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.abspath(os.path.join(BASE_DIR, 'templates'))],
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        }
     }],
     AUDIT_LOG_API_AUTH_USER_MODEL="audit_log.EmployeeProfile",
 )

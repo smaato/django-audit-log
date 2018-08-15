@@ -30,7 +30,8 @@ urlpatterns = (
 
 
 def __setup_admins():
-    from django.contrib.auth.models import User
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
     User.objects.all().delete()
     admin = User(username="admin@example.com", is_staff=True, is_superuser=True)
     admin.set_password("admin")
@@ -53,7 +54,7 @@ def __setup_employees():
 
 def _setup_admin():
     from django.conf import settings
-    if settings.AUTH_USER_MODEL == "audit_log.Employee":
+    if settings.AUTH_USER_MODEL == "audit_log_tests.Employee":
         __setup_employees()
     else:
         __setup_admins()
