@@ -136,11 +136,8 @@ class APIAuthMiddleware(object):
         """The Django authentication middleware requires session middleware to be installed.
          Edit your MIDDLEWARE setting to insert 'django.contrib.sessions.middleware.SessionMiddleware'."""
 
-        user = get_user(request)
-
+        user = get_user(request) or AnonymousUser()
         if not user.is_authenticated:
             request.user = SimpleLazyObject(lambda: self.get_user(request))
-        else:
-            request.user = AnonymousUser()
 
         return self.get_response(request)
